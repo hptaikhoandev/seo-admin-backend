@@ -1,0 +1,56 @@
+name: Spam data backend CI/CD
+
+on:
+  push:
+    branches:
+      - feature/crawl-data-xxx
+  pull_request:
+    branches:
+      - feature/crawl-data-xxx
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+
+    - name: Install dependencies
+      run: npm install
+    
+    - name: Run ESLint
+      run: npm run lint
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Add SSH key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/ssh_private_key.pem
+        chmod 600 ~/.ssh/ssh_private_key.pem
+
+    - name: SSH to server and deploy
+      if: github.ref == 'refs/heads/feature/crawl-data-xxx'
+      run: |
+          echo "Deploying to Staging server ..."
+          ssh -i ~/.ssh/ssh_private_key.pem -o StrictHostKeyChecking=no ec2-user@ec2-50-16-167-181.compute-1.amazonaws.com << 'EOF'
+            echo "Connected to the server"
+            cd /home/ec2-user/data-spam-backend
+            git pull origin feature/crawl-data
+            docker-compose down -v
+            docker build -t seo-admin-backend .
+            docker-compose up
+          EOF
+      

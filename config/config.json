@@ -1,0 +1,16 @@
+{
+  "development": {
+    "username": "root",
+    "password": "drowssapAmin",
+    "database": "seo-admin-backend",
+    "host": "localhost",
+    "dialect": "mysql"
+  },
+  "production": {
+    "username": "root",
+    "password": "drowssapAmin",
+    "database": "seo-admin-backend",
+    "host": "db",
+    "dialect": "mysql"
+  }
+}

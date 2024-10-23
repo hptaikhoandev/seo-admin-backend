@@ -1,0 +1,41 @@
+version: '3.4'
+services:
+  app:
+    image: seo-admin-backend
+    ports:
+      - '880:80' # Public HTTP Port
+      - '4443:443' # Public HTTPS Port
+      - '881:81' # Admin Web Port
+    environment:
+      DB_MYSQL_HOST: 'db'
+      DB_MYSQL_PORT: 3306
+      DB_MYSQL_NAME: 'seo-admin-backend'
+    env_file:
+      - .env  
+    volumes:
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt
+    restart: unless-stopped
+    depends_on:
+        - db
+  
+  db:
+    image: 'mysql:latest'
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: 'drowssapAmin'
+      MYSQL_DATABASE: 'seo-admin-backend'
+    ports:
+      - '3306:3306'
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    platform: linux/amd64
+    container_name: seo-admin-phpmyadmin
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: 'drowssapAmin'
+      MYSQL_DATABASE: 'seo-admin-backend'
+    ports:
+      - '8080:80'
+    depends_on:
+      - db
