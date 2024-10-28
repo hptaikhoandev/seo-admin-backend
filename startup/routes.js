@@ -2,6 +2,7 @@ const express = require("express");
 const healthRoutes = require('../routes/healthRoutes');
 const authRoutes = require('../routes/authRoutes');
 const userRoutes = require('../routes/userRoutes');
+const domainRoutes = require('../routes/domainRoutes');
 
 module.exports = function (app) {
   app.use(express.json({ limit: "100mb" }));
@@ -10,4 +11,5 @@ module.exports = function (app) {
   app.use('/api/health-check', healthRoutes);
   app.use('/api/auth', authRoutes)
   app.use('/api/users', userRoutes);
+  app.use('/api/domains', domainRoutes);
 };

@@ -1,29 +1,27 @@
-const bcrypt = require('bcrypt');
 const { Op } = require('sequelize');
-const User = require("../models/user");
+const DomainService = require("../services/domainService");
 
-exports.AddUser = async (req, res) => {
-    const { name, email, password, roleId } = req.body;
+exports.AddDomain = async (req, res) => {
+    console.log('=====>okkkk', req.body);
+    const { name, userId, ns, status } = req.body;
     try {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const item = await User.create({ name, email, password: hashedPassword, roleId });
+        const item = await Domain.create({ name, userId, ns, status });
         res.status(201).json(item);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
-exports.UpdateUser = async (req, res) => {
+exports.UpdateDomain = async (req, res) => {
     const { id } = req.params;
-    const { name, email, password, roleId } = req.body;
+    const { name, userId, ns, status } = req.body;
     try {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const item = await User.findByPk(id);
+        const item = await Domain.findByPk(id);
         if (item) {
             item.name = name;
-            item.email = email;
-            item.password = hashedPassword;
-            item.roleId = roleId;
+            item.userId = userId;
+            item.ns = ns;
+            item.status = status;
             await item.save();
             res.json(item);
         }
@@ -32,10 +30,11 @@ exports.UpdateUser = async (req, res) => {
     }
 };
 
-exports.DeleteUser = async (req, res) => {
+exports.DeleteDomain = async (req, res) => {
     const { id } = req.params;
+    const { name, userId } = req.body;
     try {
-        const item = await User.findByPk(id);
+        const item = await Domain.findByPk(id);
         if (item) {
             await item.destroy();
             res.status(204).end();
@@ -45,13 +44,13 @@ exports.DeleteUser = async (req, res) => {
     }
 };
 
-exports.FindAllUser = async (req, res) => {
+exports.FindAllDomain = async (req, res) => {
     const { page, limit, search, sortBy, sortDesc } = req.query;
     const offset = (page - 1) * limit;
     const whereClause = search ? {
         [Op.or]: [
           { name: { [Op.like]: `%${search}%` } },
-          { email: { [Op.like]: `%${search}%` } }
+          { status: { [Op.like]: `%${search}%` } }
         ]
       } : {};
       const order = sortBy ? [
@@ -59,7 +58,7 @@ exports.FindAllUser = async (req, res) => {
       ] : [];
 
     try {
-        const { count, rows } = await User.findAndCountAll({
+        const { count, rows } = await Domain.findAndCountAll({
             where: whereClause,
             order: order,
             limit: parseInt(limit),
@@ -75,3 +74,19 @@ exports.FindAllUser = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+// exports.SendSMS = async (req, res) => {
+//     const domainService = new DomainService();
+//     const { domainList, messageList } = req.body;
+//     console.log('=====>uuu', domainList, messageList);
+//     try {
+//         await domainService.SendSMS({
+//             domainList, 
+//             messageList
+//         });
+//         res.json({
+//             status: 'ok',
+//         });
+//     } catch (error) {
+//         res.status(500).json({ error: error.message });
+//     }
+// };
