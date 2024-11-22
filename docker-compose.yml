@@ -1,7 +1,9 @@
-version: '3.4'
 services:
   app:
-    image: seo-admin-backend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: "seo-admin-backend_${TIMESTAMP}"
     ports:
       - '880:80' # Public HTTP Port
       - '4443:443' # Public HTTPS Port
@@ -30,7 +32,7 @@ services:
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:latest
     platform: linux/amd64
-    container_name: seo-admin-phpmyadmin
+    container_name: 'seo-admin-phpmyadmin_${TIMESTAMP}'
     environment:
       PMA_HOST: db
       MYSQL_ROOT_PASSWORD: 'drowssapAmin'
