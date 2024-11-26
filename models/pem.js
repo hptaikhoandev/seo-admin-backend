@@ -18,13 +18,16 @@ const Pems = sequelize.define(
         type: DataTypes.INTEGER
       },
       pem: {
-        type: DataTypes.STRING(255),
+        type: DataTypes.TEXT,
         allowNull: false,
-        unique: true,
       },
-      server_ip: {
+      team: {
         type: DataTypes.STRING(255),
         allowNull: false,
+      },
+      fileName: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
       },
     },
     {

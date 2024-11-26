@@ -24,6 +24,14 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true,
       },
+      key_name: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      private_key: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

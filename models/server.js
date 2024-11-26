@@ -26,6 +26,14 @@ const Servers = sequelize.define(
         type: DataTypes.STRING(255),
         allowNull: true,
       },
+      key_name: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+      },
+      private_key: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
     },
     {
       timestamps: true,
