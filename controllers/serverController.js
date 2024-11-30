@@ -131,8 +131,7 @@ exports.FindAllServer = async (req, res) => {
     const offset = (page - 1) * limit;
     const whereClause = search ? {
         [Op.or]: [
-          { team: { [Op.like]: `%${search}%` } },
-          { server_ip: { [Op.like]: `%${search}%` } }
+          { key_name: { [Op.like]: `%${search}%` } }
         ]
       } : {};
       const order = sortBy ? [
