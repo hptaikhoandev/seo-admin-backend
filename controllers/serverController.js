@@ -18,15 +18,14 @@ exports.AddServer = async (req, res) => {
     const result = {"success": 0, "fail": {"count": 0, "messages": []}}
     try {
         const apiUrl = process.env.API_URL_SCRIPT;
-        // Gọi API và chờ kết quả trả về
         const apiResponse = await axios.post(`${apiUrl}/add-server-domains`, { server_ip, team });
-        // Xử lý phản hồi từ API
         if (apiResponse.status === 200 && apiResponse.data.status === "success") {
             const public_ip = apiResponse.data.data.public_ip;
-            const key_name = apiResponse.data.data.key_name;
-            const private_key = apiResponse.data.data.private_key;
 
-            // Tạo bản ghi trong cơ sở dữ liệu
+            // Tạo bản ghi trong Server table với private_key dựa vào team trong Pem table
+            let private_key = "";
+            const pemRecord = await Pem.findOne({where: { team: team },});
+            if (pemRecord) private_key = pemRecord.pem;
             await Server.create({ server_ip: public_ip, team, key_name: `${team}_${public_ip}`, private_key });
 
             // Trả về kết quả thành công
@@ -46,7 +45,7 @@ exports.AddServer = async (req, res) => {
         }
     } catch (error) {
         // Xử lý lỗi
-        console.error("Error in AddPem:", error.message);
+        console.error("Error in AddServer:", error.message);
         // Trả về lỗi nếu xảy ra
         result.fail.count += 1
         result.fail.messages.push("Internal Server Error")
@@ -56,6 +55,47 @@ exports.AddServer = async (req, res) => {
         });
     }
 };
+exports.AddServerImport = async (req, res) => {
+    const { server_ip, team, private_key } = req.body;
+    const result = { "success": 0, "fail": { "count": 0, "messages": [] } };
+
+    try {
+        const key_name = `${team}_${server_ip}`;
+
+        // Kiểm tra xem key_name đã tồn tại chưa
+        const existingServer = await Server.findOne({ where: { key_name } });
+
+        if (existingServer) {
+            // Nếu tồn tại, cập nhật bản ghi
+            await existingServer.update({ server_ip, team, private_key });
+            result.success += 1;
+            return res.status(200).json({
+                status: "success",
+                message: "Server updated successfully.",
+                result: result,
+            });
+        } else {
+            // Nếu không tồn tại, tạo mới bản ghi
+            await Server.create({ server_ip, team, key_name, private_key });
+            result.success += 1;
+            return res.status(200).json({
+                status: "success",
+                message: "Server created successfully.",
+                result: result,
+            });
+        }
+    } catch (error) {
+        // Xử lý lỗi
+        console.error("Error in AddServerImport:", error.message);
+        result.fail.count += 1;
+        result.fail.messages.push("Internal Server Error");
+        return res.status(500).json({
+            status: "error",
+            result: result,
+        });
+    }
+};
+
 
 exports.UpdateServer = async (req, res) => {
     const { id } = req.params;

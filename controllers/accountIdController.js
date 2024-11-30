@@ -5,13 +5,37 @@ const AccountId = require("../models/accountId");
 exports.AddAccountId = async (req, res) => {
     const { team, account_id, email } = req.body;
     try {
-        const item = await AccountId.create({ team, account_id, email });
-        res.status(201).json(item);
+        // Kiểm tra xem bản ghi có tồn tại không
+        const existingItem = await AccountId.findOne({ where: { team, email } });
+
+        if (existingItem) {
+            // Nếu đã tồn tại, cập nhật account_id
+            existingItem.account_id = account_id;
+            await existingItem.save();
+            return res.status(200).json({
+                success: true,
+                message: "Account ID updated successfully",
+                data: existingItem,
+            });
+        } else {
+            // Nếu không tồn tại, tạo bản ghi mới
+            const newItem = await AccountId.create({ team, account_id, email });
+            return res.status(201).json({
+                success: true,
+                message: "New Account ID created successfully",
+                data: newItem,
+            });
+        }
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        // Xử lý lỗi
+        console.error("Error in AddAccountId:", error.message);
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error",
+            error: error.message,
+        });
     }
 };
-
 exports.UpdateAccountId = async (req, res) => {
     const { id } = req.params;
     const { team, account_id, email } = req.body;
@@ -48,7 +72,7 @@ exports.FindAllAccountId = async (req, res) => {
     const whereClause = search ? {
         [Op.or]: [
           { team: { [Op.like]: `%${search}%` } },
-          { account_id: { [Op.like]: `%${search}%` } }
+        //   { account_id: { [Op.like]: `%${search}%` } }
         ]
       } : {};
       const order = sortBy ? [
