@@ -17,13 +17,16 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       pem: {
-        type: Sequelize.STRING,
+        type: Sequelize.TEXT,
         allowNull: false,
-        unique: true,
       },
-      server_ip: {
+      team: {
         type: Sequelize.STRING,
         allowNull: false,
+      },
+      fileName: {
+        type: Sequelize.STRING,
+        allowNull: true,
       },
       createdAt: {
         allowNull: false,
