@@ -12,7 +12,7 @@ module.exports = function (app) {
   app.use(express.urlencoded({ extended: false, limit: '100mb' }));
 
   app.use('/api/health-check', healthRoutes);
-  app.use('/api/auth', authRoutes)
+  app.use('/api/auth', authRoutes);
   app.use('/api/users', userRoutes);
   app.use('/api/domains', domainRoutes);
   app.use('/api/accountIds', accountIdRoutes);
