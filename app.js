@@ -3,6 +3,8 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const cron = require('node-cron');
+const { runDailyTask } = require('./controllers/taskController');
 
 // Kết nối tới Express
 const app = express();
@@ -45,7 +47,29 @@ const options = {
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerJsdoc(options)));
 
   
-  // Sử dụng routes
+// Sử dụng routes
 require("./startup/routes")(app);
+
+// Gọi hàm runDailyTask() ngay khi khởi động ứng dụng
+(async () => {
+  console.log('App started. Running initial daily task...');
+  try {
+    await runDailyTask();
+    console.log('Initial daily task completed successfully.');
+  } catch (error) {
+    console.error('Error running initial daily task:', error.message);
+  }
+})();
+
+// Cronjob chạy hàng ngày lúc 00:00
+cron.schedule('0 0 * * *', async () => {
+  console.log('Cronjob triggered at 00:00');
+  try {
+    await runDailyTask();
+    console.log('Cronjob completed successfully.');
+  } catch (error) {
+    console.error('Error running cronjob:', error.message);
+  }
+});
   
 module.exports = app;
