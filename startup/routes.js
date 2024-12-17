@@ -6,6 +6,7 @@ const domainRoutes = require('../routes/domainRoutes');
 const accountIdRoutes = require('../routes/accountIdRoutes');
 const pemRoutes = require('../routes/pemRoutes');
 const serverRoutes = require('../routes/serverRoutes');
+const taskRoutes = require('../routes/taskRoutes');
 
 module.exports = function (app) {
   app.use(express.json({ limit: "100mb" }));
@@ -18,4 +19,5 @@ module.exports = function (app) {
   app.use('/api/accountIds', accountIdRoutes);
   app.use('/api/pems', pemRoutes);
   app.use('/api/servers', serverRoutes);
+  app.use('/api/tasks', taskRoutes);
 };
