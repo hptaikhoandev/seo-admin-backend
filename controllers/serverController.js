@@ -21,12 +21,15 @@ exports.AddServer = async (req, res) => {
         const apiResponse = await axios.post(`${apiUrl}/add-server-domains`, { server_ip, team });
         if (apiResponse.status === 200 && apiResponse.data.status === "success") {
             const public_ip = apiResponse.data.data.public_ip;
+            const cpu = apiResponse.data.data.cpu;
+            const ram = apiResponse.data.data.ram;
+            const site = apiResponse.data.data.site;
 
             // Tạo bản ghi trong Server table với private_key dựa vào team trong Pem table
             let private_key = "";
             const pemRecord = await Pem.findOne({where: { team: team },});
             if (pemRecord) private_key = pemRecord.pem;
-            await Server.create({ server_ip: public_ip, team, key_name: `${team}_${public_ip}`, private_key });
+            await Server.create({ server_ip: public_ip, team, cpu: cpu, ram: ram, site: site, key_name: `${team}_${public_ip}`, private_key });
 
             // Trả về kết quả thành công
             result.success += 1
@@ -60,30 +63,58 @@ exports.AddServerImport = async (req, res) => {
     const result = { "success": 0, "fail": { "count": 0, "messages": [] } };
 
     try {
-        const key_name = `${team}_${server_ip}`;
+        const apiUrl = process.env.API_URL_SCRIPT;
+        let params = { server_ip: server_ip, team: team };
+        const apiResponse = await axios.get(`${apiUrl}/param-dashboard`, {
+            params,
+            headers: {
+              Authorization: `Bearer ${process.env.BEARER_TOKEN}`,
+            },
+          });
+      
+        if (apiResponse.status === 200 && apiResponse.data.status === "success") {
+            console.log("===>site", apiResponse.data.data.site);
 
-        // Kiểm tra xem key_name đã tồn tại chưa
-        const existingServer = await Server.findOne({ where: { key_name } });
+            const cpu = apiResponse.data.data.cpu;
+            const ram = apiResponse.data.data.ram / 1024;
+            const sites = apiResponse.data.data.site;
 
-        if (existingServer) {
-            // Nếu tồn tại, cập nhật bản ghi
-            await existingServer.update({ server_ip, team, private_key });
-            result.success += 1;
-            return res.status(200).json({
-                status: "success",
-                message: "Server updated successfully.",
-                result: result,
-            });
+            const key_name = `${team}_${server_ip}`;
+            // Kiểm tra xem key_name đã tồn tại chưa
+            const existingServer = await Server.findOne({ where: { key_name } });
+            if (existingServer) {
+                // Nếu tồn tại, cập nhật bản ghi
+                await existingServer.update({ server_ip, team, cpu, ram, sites, private_key });
+                result.success += 1;
+                return res.status(200).json({
+                    status: "success",
+                    message: "Server updated successfully.",
+                    result: result,
+                });
+            } else {
+                // Nếu không tồn tại, tạo mới bản ghi
+                await Server.create({ server_ip, team, cpu, ram, sites, key_name, private_key });
+                result.success += 1;
+                return res.status(200).json({
+                    status: "success",
+                    message: "Server created successfully.",
+                    result: result,
+                });
+            }
+    
         } else {
-            // Nếu không tồn tại, tạo mới bản ghi
-            await Server.create({ server_ip, team, key_name, private_key });
-            result.success += 1;
-            return res.status(200).json({
+            // Trường hợp API không trả về thành công
+            result.fail.count += 1
+            result.fail.messages.push(apiResponse.data.message || "Server tạo bị lỗi")
+            return res.status(apiResponse.status || 500).json({
                 status: "success",
-                message: "Server created successfully.",
                 result: result,
             });
         }
+
+
+
+
     } catch (error) {
         // Xử lý lỗi
         console.error("Error in AddServerImport:", error.message);

@@ -20,7 +20,11 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true,
       },
-      total_sites: {
+      server_ip: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      sites: {
         type: Sequelize.STRING,
         allowNull: true,
       },

@@ -26,10 +26,11 @@ exports.runDailyTask = async () => {
           server_ip: itemsVPSSeo1[i].server_ip,
         });
         if (amountDomain && amountDomain.status === 'success') {
-          totalSiteSEO1 += amountDomain.result.success;
+          sites= amountDomain.result.success;
+          await this.saveToDashboard({ team: itemsVPSSeo1[0]?.team ?? '', server_ip: itemsVPSSeo1[i].server_ip, sites: sites });
+          await this.saveToServer({ team: itemsVPSSeo1[0]?.team ?? '', server_ip: itemsVPSSeo1[i].server_ip, sites: sites });
         }
       }
-      await this.saveToDashboard({ team: 'seo-1', totalSite: totalSiteSEO1 });
 
       for (let i = 0; i < itemsVPSSeo2.length; i++) {
         let amountDomain = await this.fetchDomainAmount({
@@ -37,10 +38,11 @@ exports.runDailyTask = async () => {
           server_ip: itemsVPSSeo2[i].server_ip,
         });
         if (amountDomain && amountDomain.status === 'success') {
-          totalSiteSEO2 += amountDomain.result.success;
-        }
+            sites= amountDomain.result.success;
+            await this.saveToDashboard({ team: itemsVPSSeo2[0]?.team ?? '', server_ip: itemsVPSSeo2[i].server_ip, sites: sites });
+            await this.saveToServer({ team: itemsVPSSeo2[0]?.team ?? '', server_ip: itemsVPSSeo2[i].server_ip, sites: sites });
+          }
       }
-      await this.saveToDashboard({ team: 'seo-2', totalSite: totalSiteSEO2 });
 
       for (let i = 0; i < itemsVPSSeo3.length; i++) {
         let amountDomain = await this.fetchDomainAmount({
@@ -48,10 +50,11 @@ exports.runDailyTask = async () => {
           server_ip: itemsVPSSeo3[i].server_ip,
         });
         if (amountDomain && amountDomain.status === 'success') {
-          totalSiteSEO3 += amountDomain.result.success;
-        }
+            sites= amountDomain.result.success;
+            await this.saveToDashboard({ team: itemsVPSSeo3[0]?.team ?? '', server_ip: itemsVPSSeo3[i].server_ip, sites: sites });
+            await this.saveToServer({ team: itemsVPSSeo3[0]?.team ?? '', server_ip: itemsVPSSeo3[i].server_ip, sites: sites });
+          }
       }
-      await this.saveToDashboard({ team: 'seo-3', totalSite: totalSiteSEO3 });
 
       for (let i = 0; i < itemsVPSSeo4.length; i++) {
         let amountDomain = await this.fetchDomainAmount({
@@ -59,10 +62,11 @@ exports.runDailyTask = async () => {
           server_ip: itemsVPSSeo4[i].server_ip,
         });
         if (amountDomain && amountDomain.status === 'success') {
-          totalSiteSEO4 += amountDomain.result.success;
-        }
+            sites= amountDomain.result.success;
+            await this.saveToDashboard({ team: itemsVPSSeo4[0]?.team ?? '', server_ip: itemsVPSSeo4[i].server_ip, sites: sites });
+            await this.saveToServer({ team: itemsVPSSeo4[0]?.team ?? '', server_ip: itemsVPSSeo4[i].server_ip, sites: sites });
+          }
       }
-      await this.saveToDashboard({ team: 'seo-4', totalSite: totalSiteSEO4 });
 
       console.log("Daily task completed successfully.");
     } catch (error) {
@@ -89,12 +93,18 @@ exports.fetchDomainAmount = async ({ team, server_ip }) => {
   }
 };
 
-exports.saveToDashboard = async ({ team, totalSite }) => {
-  const existingTeam = await Dashboard.findOne({ where: { team } });
+exports.saveToDashboard = async ({ team, server_ip, sites }) => {
+  const existingTeam = await Dashboard.findOne({ where: { team, server_ip } });
   if (existingTeam) {
-      await existingTeam.update({ team: team, total_sites: totalSite });
+      await existingTeam.update({ team: team, server_ip, sites });
   } else {
-      await Dashboard.create({ team: team, total_sites: totalSite });
+      await Dashboard.create({ team: team, server_ip, sites });
+  }
+};
+exports.saveToServer = async ({ team, server_ip, sites }) => {
+  const existingServer = await Server.findOne({ where: { team, server_ip } });
+  if (existingServer) {
+      await existingServer.update({ team: team, server_ip, sites });
   }
 };
 

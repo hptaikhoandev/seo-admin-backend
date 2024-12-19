@@ -17,13 +17,17 @@ const Dashboards = sequelize.define(
         primaryKey: true,
         type: DataTypes.INTEGER
       },
-      total_sites: {
-        type: DataTypes.STRING(255),
-        allowNull: false,
-      },
       team: {
         type: DataTypes.STRING(255),
         allowNull: true,
+      },
+      server_ip: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+      },
+      sites: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
       },
     },
     {

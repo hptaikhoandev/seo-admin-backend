@@ -24,6 +24,18 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true,
       },
+      cpu: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      ram: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      sites: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
       key_name: {
         type: Sequelize.STRING,
         allowNull: true,
