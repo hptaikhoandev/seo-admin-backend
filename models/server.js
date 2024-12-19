@@ -26,6 +26,18 @@ const Servers = sequelize.define(
         type: DataTypes.STRING(255),
         allowNull: true,
       },
+      cpu: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+      },
+      ram: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+      },
+      sites: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+      },
       key_name: {
         type: DataTypes.STRING(255),
         allowNull: true,
