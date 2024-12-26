@@ -130,12 +130,14 @@ exports.AddServerImport = async (req, res) => {
 
 exports.UpdateServer = async (req, res) => {
     const { id } = req.params;
-    const { server_ip, team } = req.body;
+    const { server_ip, team, private_key } = req.body;
     try {
+        console.log('===>editedItem', id);
         const item = await Server.findByPk(id);
         if (item) {
             item.team = team;
             item.server_ip = server_ip;
+            item.private_key = private_key;
             await item.save();
             res.json(item);
         }
