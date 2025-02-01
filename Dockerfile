@@ -16,4 +16,5 @@ RUN chown -R appuser:dialout /app
 
 USER appuser
 
-CMD ["sh", "-c", "npx sequelize-cli db:migrate --env production && npm run start"]
+# CMD ["sh", "-c", "npx sequelize-cli db:migrate --env production && npm run start"]
+CMD ["npm", "run", "start"]
