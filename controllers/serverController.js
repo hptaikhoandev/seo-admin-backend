@@ -59,13 +59,19 @@ exports.AddServer = async (req, res) => {
     }
 };
 exports.AddServerImport = async (req, res) => {
-    const { server_ip, team, private_key } = req.body;
+    const { server_ip, team, private_key, username, authMethod } = req.body;
     const result = { "success": 0, "fail": { "count": 0, "messages": [] } };
 
     try {
-        const apiUrl = process.env.API_URL_SCRIPT;
-        let params = { server_ip: server_ip, team: team };
-        const apiResponse = await axios.get(`${apiUrl}/param-dashboard`, {
+        let apiUrl = process.env.API_URL_SCRIPT;
+        let params = { server_ip: server_ip, team: team, username: username, private_key: private_key };
+        if (authMethod == 'SSH') {
+            apiUrl = apiUrl + '/param-dashboard-ssh';
+        } else {{
+            apiUrl = apiUrl + '/param-dashboard';
+        }}
+    
+        const apiResponse = await axios.get(`${apiUrl}`, {
             params,
             headers: {
               Authorization: `Bearer ${process.env.BEARER_TOKEN}`,
@@ -93,7 +99,7 @@ exports.AddServerImport = async (req, res) => {
                 });
             } else {
                 // Nếu không tồn tại, tạo mới bản ghi
-                await Server.create({ server_ip, team, cpu, ram, sites, key_name, private_key });
+                await Server.create({ server_ip, team, cpu, ram, sites, key_name, username, authMethod, private_key });
                 result.success += 1;
                 return res.status(200).json({
                     status: "success",

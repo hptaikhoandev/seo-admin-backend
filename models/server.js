@@ -40,6 +40,14 @@ const Servers = sequelize.define(
         type: DataTypes.STRING(255),
         allowNull: true,
       },
+      username: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+      },
+      authMethod: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+      },
       private_key: {
         type: DataTypes.TEXT,
         allowNull: true,
