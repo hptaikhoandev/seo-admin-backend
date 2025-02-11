@@ -32,6 +32,40 @@ exports.UpdateUser = async (req, res) => {
     }
 };
 
+exports.UpdateProfile = async (req, res) => {
+    const { email, oldPassword, password } = req.body;
+    
+    try {
+        // Kiểm tra email đã tồn tại
+        const existingUser = await User.findOne({ where: { email } });
+        if (existingUser) {
+            const isMatch = await bcrypt.compare(oldPassword, existingUser.password);
+            if (!isMatch) {
+                return res.status(400).json({ error: 'Invalid email or password' });
+            }
+            // Mã hóa mật khẩu
+            const hashedPassword = await bcrypt.hash(password, 10);
+            
+            // 4. Update the password securely
+            const [updated] = await User.update(
+                { password: hashedPassword }, 
+                { where: { email } }
+            );
+            
+            if (updated) {
+                const updatedUser = await User.findOne({ where: { email }, attributes: ['id', 'email'] });
+                return res.status(200).json({ success: true, message: 'Password updated successfully', user: updatedUser });
+            }
+
+            return res.status(400).json({ error: 'Failed to update password' });
+        } else {
+            return res.status(400).json({ error: 'User is not existed!' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 exports.DeleteUser = async (req, res) => {
     const { id } = req.params;
     try {
