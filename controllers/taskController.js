@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const { Op } = require('sequelize');
 const Server = require("../models/server");
 const Dashboard = require("../models/dashboard");
+const SubDomains = require("../models/subdomain");
 const axios = require('axios');
 
 exports.runDailyTask = async () => {
@@ -14,7 +15,11 @@ exports.runDailyTask = async () => {
       const itemsVPSSeo2 = serverList.filter(item => item.team === 'seo-2');
       const itemsVPSSeo3 = serverList.filter(item => item.team === 'seo-3');
       const itemsVPSSeo4 = serverList.filter(item => item.team === 'seo-4');
-
+      const serverIpsSeo1 = itemsVPSSeo1.map(item => item.server_ip);
+      const serverIpsSeo2 = itemsVPSSeo2.map(item => item.server_ip);
+      const serverIpsSeo3 = itemsVPSSeo3.map(item => item.server_ip);
+      const serverIpsSeo4 = itemsVPSSeo4.map(item => item.server_ip);
+  
       let totalSiteSEO1 = 0;
       let totalSiteSEO2 = 0;
       let totalSiteSEO3 = 0;
@@ -68,6 +73,17 @@ exports.runDailyTask = async () => {
           }
       }
 
+      let dnsRecords = await this.fetchDNSRecords({});
+      
+      if (dnsRecords && dnsRecords.status === 'success') {
+        const filteredData = dnsRecords["results"].map(record => {
+          const { id, ...dataWithoutId } = record; // Destructure to remove 'id'
+          return dataWithoutId;
+        });
+        this.saveListDataToSubDomain(filteredData);
+        this.deleteOldSubDomains();
+        
+      }
       console.log("Daily task completed successfully.");
     } catch (error) {
       console.error("Error in daily task:", error.message);
@@ -90,6 +106,57 @@ exports.fetchDomainAmount = async ({ team, server_ip }) => {
   } catch (error) {
     console.error(`Error fetching domain amount for ${server_ip}:`, error.message);
     return null; // Trả về null nếu có lỗi
+  }
+};
+
+
+exports.fetchDNSRecords = async ({}) => {
+  const apiUrl = process.env.API_URL_SCRIPT;
+  try {
+    
+    let params = { server_ip_list: '' };
+
+    const response = await axios.get(`${apiUrl}/get-dns-records`, {
+      params,
+      headers: {
+        Authorization: `Bearer ${process.env.BEARER_TOKEN}`,
+      },
+    });
+    return response.data; // Trả về dữ liệu thành công
+  } catch (error) {
+    console.error(`Error fetching domain amount for ${serverIPList}:`, error.message);
+    return null; // Trả về null nếu có lỗi
+  }
+};
+
+exports.saveToSubDomain = ({ name, comment, content, proxied, ipv4Only, ipv6Only, ttl, tags, type, proxiable, zone_id, created_on, modified_on, account_id }) => {
+  SubDomains.create({ name, comment, content, proxied, ipv4Only, ipv6Only, ttl, tags, type, proxiable, zone_id, created_on, modified_on, account_id });
+};
+
+exports.saveListDataToSubDomain = (listData) => {
+  try {
+    SubDomains.bulkCreate(listData);
+  } catch (error) {
+    console.error('Error deleting old SubDomains:', error);
+  }
+};
+
+exports.deleteOldSubDomains = () => {
+  try {
+    // Calculate the date one month ago from today
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+    // Delete records that are older than one month
+    SubDomains.destroy({
+      where: {
+        createdAt: {
+          [Op.lt]: oneMonthAgo, // Find records with 'createdAt' before the calculated date
+        },
+      },
+    });
+  } catch (error) {
+    console.error('Error deleting old SubDomains:', error);
   }
 };
 
