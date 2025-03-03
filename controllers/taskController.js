@@ -115,7 +115,7 @@ exports.fetchDNSRecords = async ({}) => {
   try {
     
     let params = { server_ip_list: '' };
-
+    console.log("--------------------")
     const response = await axios.get(`${apiUrl}/get-dns-records`, {
       params,
       headers: {
@@ -129,16 +129,27 @@ exports.fetchDNSRecords = async ({}) => {
   }
 };
 
-exports.saveToSubDomain = ({ name, comment, content, proxied, ipv4Only, ipv6Only, ttl, tags, type, proxiable, zone_id, created_on, modified_on, account_id }) => {
-  SubDomains.create({ name, comment, content, proxied, ipv4Only, ipv6Only, ttl, tags, type, proxiable, zone_id, created_on, modified_on, account_id });
-};
-
-exports.saveListDataToSubDomain = (listData) => {
+exports.saveListDataToSubDomain = async (listData) => {
   try {
     SubDomains.bulkCreate(listData);
   } catch (error) {
     console.error('Error deleting old SubDomains:', error);
   }
+  // try {
+  //   for (const data of listData) {
+  //     const { account_id, name, content, zone_id } = data;
+  //     const existingSubDomain = await SubDomains.findOne({ where: { account_id, name, zone_id } });
+  //     if (existingSubDomain) {
+  //       if (content !== existingSubDomain.content) {
+  //         existingSubDomain.update({ content: content, old_content: existingSubDomain.content });
+  //       }
+  //     } else {
+  //       SubDomains.create(data);
+  //     }
+  //   }
+  // } catch (error) {
+  //   console.error('Error deleting old SubDomains:', error);
+  // }
 };
 
 exports.deleteOldSubDomains = () => {
