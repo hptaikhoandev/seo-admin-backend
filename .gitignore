@@ -16,4 +16,5 @@ public/images/*
 .docker/data/db/*
 !.docker/data/db/.gitkeep
 .docker/data/redis/*
-!.docker/data/redis/.gitkeep
+!.docker/data/redis/.gitkeep.env
+.env
