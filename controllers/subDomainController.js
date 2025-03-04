@@ -89,3 +89,51 @@ exports.findAllSubDomain = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+
+exports.findListSubDomainHistory = async (req, res) => {
+  const { page, limit, search, sortBy, sortDesc, name, zone_id, account_id, current_id } = req.query;
+  const offset = (page - 1) * limit;
+  const whereClause = {
+      [Op.and]: [
+        { name: name},
+        { account_id: account_id},
+        { zone_id: zone_id},
+        { id: { [Op.ne]: current_id}}
+      ]
+    }
+
+  const latestIdsQuery = `
+    SELECT MAX(id) AS id
+    FROM subdomains
+    WHERE name = :name
+    AND account_id = :account_id
+    AND zone_id = :zone_id
+    GROUP BY name, account_id, zone_id, modified_on
+  `;
+
+  const latestIds = await SubDomain.sequelize.query(latestIdsQuery, {
+    replacements: { name, account_id, zone_id },
+    type: Sequelize.QueryTypes.SELECT,
+  });
+
+  const latestIdsArray = latestIds.map(row => row.id);
+
+  const { count, rows } = await SubDomain.findAndCountAll({
+    where: { id: { [Op.in]: latestIdsArray } }, // Filter by latest IDs
+    order: [['modified_on', 'DESC']], // Show newest records first
+    limit: parseInt(limit),
+    offset: parseInt(offset),
+  });
+
+  try {
+    res.json({
+      data: rows,
+      total: count,
+      page: parseInt(page),
+      limit: parseInt(limit),
+  });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
