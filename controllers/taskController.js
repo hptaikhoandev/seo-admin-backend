@@ -124,7 +124,7 @@ exports.fetchDNSRecords = async ({}) => {
     });
     return response.data; // Trả về dữ liệu thành công
   } catch (error) {
-    console.error(`Error fetching domain amount for ${serverIPList}:`, error.message);
+    console.error(`Error fetchDNSRecords:`, error.message);
     return null; // Trả về null nếu có lỗi
   }
 };
