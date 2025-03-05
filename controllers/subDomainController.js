@@ -95,7 +95,7 @@ exports.findAllSubDomain = async (req, res) => {
         const { page = 1, limit = 10, search, sortBy, sortDesc, team } = req.query;
         const offset = (parseInt(page) - 1) * parseInt(limit);
 
-        // ✅ Define Search Filter
+        // Define Search Filter
         const whereClause = search
             ? {
                 [Op.and]: [
@@ -110,24 +110,47 @@ exports.findAllSubDomain = async (req, res) => {
             }
             : {};
 
-        // ✅ Sorting Logic
+        // Sorting Logic
         const order = sortBy ? [[sortBy, sortDesc === 'true' ? 'DESC' : 'ASC']] : [['createdAt', 'DESC']];
 
-        // ✅ Step 1: Get the Total Count (Filters by `team` unless it's "seo-admin")
+        let totalCountWhereClause = [];
+        let replacements = {};
+
+        // Add Team Filtering (Skip if "seo-admin")
+        if (team && team !== "seo-admin") {
+            totalCountWhereClause.push("sub.account_id IN (SELECT account_id FROM accountIds WHERE team = :team)");
+            replacements.team = team;
+        }
+
+        // Add Search Filtering
+        if (search) {
+            totalCountWhereClause.push(`
+                (sub.name LIKE :search
+                OR sub.account_id LIKE :search
+                OR sub.content LIKE :search)
+            `);
+            replacements.search = `%${search}%`;
+        }
+
+        // Build Final WHERE Clause (If Filters Exist)
+        const whereSQL = totalCountWhereClause.length ? `WHERE ${totalCountWhereClause.join(" AND ")}` : "";
+
+        // Step 2: Build Dynamic SQL Query for Total Count
         const totalCountQuery = `
             SELECT COUNT(DISTINCT sub.zone_id, sub.account_id, sub.name) AS total
             FROM subdomains AS sub
-            ${team && team !== "admin" ? 'INNER JOIN accountIds AS acc ON sub.account_id = acc.account_id WHERE acc.team = :team' : ''}
+            ${whereSQL}
         `;
 
+        // Step 3: Execute the Query
         const totalCountResult = await SubDomain.sequelize.query(totalCountQuery, {
-            replacements: team && team !== "admin" ? { team } : {},
+            replacements,
             type: Sequelize.QueryTypes.SELECT,
         });
 
         const totalCount = totalCountResult[0]?.total || 0;
 
-        // ✅ Step 2: Fetch Paginated Distinct Records (Filters by `team` unless it's "seo-admin")
+        // Step: Fetch Paginated Distinct Records (Filters by `team` unless it's "seo-admin")
         const rows = await SubDomain.findAll({
             where: whereClause,
             attributes: [
