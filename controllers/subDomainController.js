@@ -117,7 +117,7 @@ exports.findAllSubDomain = async (req, res) => {
         let replacements = {};
 
         // Add Team Filtering (Skip if "seo-admin")
-        if (team && team !== "seo-admin") {
+        if (team && team !== "admin") {
             totalCountWhereClause.push("sub.account_id IN (SELECT account_id FROM accountIds WHERE team = :team)");
             replacements.team = team;
         }
