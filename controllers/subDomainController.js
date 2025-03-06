@@ -161,6 +161,7 @@ exports.findAllSubDomain = async (req, res) => {
                 [Sequelize.fn('MAX', Sequelize.col('subdomains.created_on')), 'created_on'], // Get latest createdOn per group
                 [Sequelize.fn('MAX', Sequelize.col('subdomains.modified_on')), 'modified_on'], // Get latest modifiedOn per group
                 [Sequelize.fn('MAX', Sequelize.col('subdomains.content')), 'content'], // Get latest content per group
+                [Sequelize.fn('MAX', Sequelize.col('subdomains.domain')), 'domain'], // Get latest content per group
                 [Sequelize.fn('MAX', Sequelize.col('subdomains.type')), 'type'], // Get latest type per group
                 [Sequelize.fn('MAX', Sequelize.col('subdomains.createdAt')), 'createdAt'], // Get latest createdAt per group
                 [Sequelize.literal('(SELECT email FROM accountIds WHERE accountIds.account_id = subdomains.account_id LIMIT 1)'), 'email'],
