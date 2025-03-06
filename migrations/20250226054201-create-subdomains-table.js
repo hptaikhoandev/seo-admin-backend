@@ -10,6 +10,10 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
+      domain: {
+        type: Sequelize.STRING(255),
+        allowNull: true,
+      },
       name: {
         type: Sequelize.STRING(255),
         allowNull: true,

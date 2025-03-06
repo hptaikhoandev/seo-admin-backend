@@ -15,6 +15,10 @@ const SubDomains = sequelize.define(
         primaryKey: true,
         type: DataTypes.INTEGER
       },
+      domain: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+      },
       name: {
         type: DataTypes.STRING(255),
         allowNull: true,
@@ -71,7 +75,7 @@ const SubDomains = sequelize.define(
       },
       account_id: {
         type: DataTypes.STRING(255),
-        allowNull: true,
+        allowNull: false,
       },
       zone_id: {
         type: DataTypes.STRING(255),

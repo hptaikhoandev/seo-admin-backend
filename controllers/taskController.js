@@ -115,7 +115,6 @@ exports.fetchDNSRecords = async ({}) => {
   try {
     
     let params = { server_ip_list: '' };
-    console.log("--------------------")
     const response = await axios.get(`${apiUrl}/get-dns-records`, {
       params,
       headers: {
