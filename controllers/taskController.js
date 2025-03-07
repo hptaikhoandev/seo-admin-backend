@@ -72,15 +72,20 @@ exports.runDailyTask = async () => {
             await this.saveToServer({ team: itemsVPSSeo4[0]?.team ?? '', server_ip: itemsVPSSeo4[i].server_ip, sites: sites });
           }
       }
-
-      let dnsRecords = await this.fetchDNSRecords({});
-      
+      let perPage = 50;
+      let dnsRecords = await this.fetchDNSRecords({page: 0, per_page: perPage});
+      let totalPage = 0;
       if (dnsRecords && dnsRecords.status === 'success') {
-        const filteredData = dnsRecords["results"].map(record => {
-          const { id, ...dataWithoutId } = record; // Destructure to remove 'id'
-          return dataWithoutId;
-        });
-        this.saveListDataToSubDomain(filteredData);
+        totalPage = dnsRecords.total_page;
+        for (let i = 0; i < totalPage; i++) {
+          dnsRecords = await this.fetchDNSRecords({page: i, per_page: perPage});
+          const filteredData = dnsRecords["results"].map(record => {
+            const { id, ...dataWithoutId } = record; // Destructure to remove 'id'
+            return dataWithoutId;
+          });
+          this.saveListDataToSubDomain(filteredData);
+        } 
+        
         this.deleteOldSubDomains();
         
       }
@@ -110,11 +115,11 @@ exports.fetchDomainAmount = async ({ team, server_ip }) => {
 };
 
 
-exports.fetchDNSRecords = async ({}) => {
+exports.fetchDNSRecords = async ({page, per_page}) => {
   const apiUrl = process.env.API_URL_SCRIPT;
   try {
     
-    let params = { server_ip_list: '' };
+    let params = { server_ip_list: '', page: page, per_page: per_page };
     const response = await axios.get(`${apiUrl}/get-dns-records`, {
       params,
       headers: {
