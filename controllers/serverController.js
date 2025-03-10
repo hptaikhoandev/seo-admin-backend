@@ -142,7 +142,7 @@ exports.addOrUpdateServerInfo = async (req, res) => {
     const result = { "success": 0, "fail": { "count": 0, "messages": []}, 'messages': [] };
 
     try {
-        await taskController.addOrUpdateServerInfo(team, server_ip);
+        await taskController.addOrUpdateServerInfo({team: team, server_ip: server_ip});
         result.success += 1;
         result.messages.push(`Server ${server_ip} updated successfully.`)
         return res.status(200).json({
