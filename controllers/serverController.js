@@ -3,6 +3,7 @@ const { Op } = require('sequelize');
 const Server = require("../models/server");
 const Pem = require("../models/pem");
 const axios = require('axios');
+const taskController = require('../controllers/taskController')
 
 // exports.AddServer = async (req, res) => {
 //     const { server_ip, team } = req.body;
@@ -133,6 +134,33 @@ exports.AddServerImport = async (req, res) => {
         });
     }
 };
+
+
+
+exports.addOrUpdateServerInfo = async (req, res) => {
+    const { server_ip, team } = req.body;
+    const result = { "success": 0, "fail": { "count": 0, "messages": []}, 'messages': [] };
+
+    try {
+        await taskController.addOrUpdateServerInfo(team, server_ip);
+        result.success += 1;
+        result.messages.push(`Server ${server_ip} updated successfully.`)
+        return res.status(200).json({
+            status: "success",
+            result: result,
+        });
+    } catch (error) {
+        // Xử lý lỗi
+        console.error("Error in AddServerImport:", error.message);
+        result.fail.count += 1;
+        result.fail.messages.push("Internal Server Error");
+        return res.status(500).json({
+            status: "error",
+            result: result,
+        });
+    }
+};
+
 
 
 exports.UpdateServer = async (req, res) => {

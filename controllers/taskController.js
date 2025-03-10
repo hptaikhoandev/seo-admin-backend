@@ -26,52 +26,21 @@ exports.runDailyTask = async () => {
       let totalSiteSEO4 = 0;
 
       for (let i = 0; i < itemsVPSSeo1.length; i++) {
-        let amountDomain = await this.fetchDomainAmount({
-          team: itemsVPSSeo1[i].team,
-          server_ip: itemsVPSSeo1[i].server_ip,
-        });
-        if (amountDomain && amountDomain.status === 'success') {
-          sites= amountDomain.result.success;
-          await this.saveToDashboard({ team: itemsVPSSeo1[0]?.team ?? '', server_ip: itemsVPSSeo1[i].server_ip, sites: sites });
-          await this.saveToServer({ team: itemsVPSSeo1[0]?.team ?? '', server_ip: itemsVPSSeo1[i].server_ip, sites: sites });
-        }
+        await this.addOrUpdateServerInfo({team: itemsVPSSeo1[i].team, server_ip: itemsVPSSeo1[i].server_ip});
       }
 
       for (let i = 0; i < itemsVPSSeo2.length; i++) {
-        let amountDomain = await this.fetchDomainAmount({
-          team: itemsVPSSeo2[i].team,
-          server_ip: itemsVPSSeo2[i].server_ip,
-        });
-        if (amountDomain && amountDomain.status === 'success') {
-            sites= amountDomain.result.success;
-            await this.saveToDashboard({ team: itemsVPSSeo2[0]?.team ?? '', server_ip: itemsVPSSeo2[i].server_ip, sites: sites });
-            await this.saveToServer({ team: itemsVPSSeo2[0]?.team ?? '', server_ip: itemsVPSSeo2[i].server_ip, sites: sites });
-          }
+        await this.addOrUpdateServerInfo({team: itemsVPSSeo2[i].team, server_ip: itemsVPSSeo2[i].server_ip});
       }
 
       for (let i = 0; i < itemsVPSSeo3.length; i++) {
-        let amountDomain = await this.fetchDomainAmount({
-          team: itemsVPSSeo3[i].team,
-          server_ip: itemsVPSSeo3[i].server_ip,
-        });
-        if (amountDomain && amountDomain.status === 'success') {
-            sites= amountDomain.result.success;
-            await this.saveToDashboard({ team: itemsVPSSeo3[0]?.team ?? '', server_ip: itemsVPSSeo3[i].server_ip, sites: sites });
-            await this.saveToServer({ team: itemsVPSSeo3[0]?.team ?? '', server_ip: itemsVPSSeo3[i].server_ip, sites: sites });
-          }
+        await this.addOrUpdateServerInfo({team: itemsVPSSeo3[i].team, server_ip: itemsVPSSeo3[i].server_ip});
       }
 
       for (let i = 0; i < itemsVPSSeo4.length; i++) {
-        let amountDomain = await this.fetchDomainAmount({
-          team: itemsVPSSeo4[i].team,
-          server_ip: itemsVPSSeo4[i].server_ip,
-        });
-        if (amountDomain && amountDomain.status === 'success') {
-            sites= amountDomain.result.success;
-            await this.saveToDashboard({ team: itemsVPSSeo4[0]?.team ?? '', server_ip: itemsVPSSeo4[i].server_ip, sites: sites });
-            await this.saveToServer({ team: itemsVPSSeo4[0]?.team ?? '', server_ip: itemsVPSSeo4[i].server_ip, sites: sites });
-          }
+        await this.addOrUpdateServerInfo({team: itemsVPSSeo4[i].team, server_ip: itemsVPSSeo4[i].server_ip});
       }
+
       let perPage = 50;
       let dnsRecords = await this.fetchDNSRecords({page: 0, per_page: perPage});
       let totalPage = 0;
@@ -99,7 +68,6 @@ exports.fetchDomainAmount = async ({ team, server_ip }) => {
   const apiUrl = process.env.API_URL_SCRIPT;
   try {
     let params = { team: team, server_ip: server_ip };
-
     const response = await axios.get(`${apiUrl}/count-domains`, {
       params,
       headers: {
@@ -110,6 +78,43 @@ exports.fetchDomainAmount = async ({ team, server_ip }) => {
     return response.data; // Trả về dữ liệu thành công
   } catch (error) {
     console.error(`Error fetching domain amount for ${server_ip}:`, error.message);
+    return null; // Trả về null nếu có lỗi
+  }
+};
+
+
+exports.addOrUpdateServerInfo = async ({ team, server_ip }) => {
+  try {
+    let amountDomain = await this.fetchDomainAmount({
+      team: team,
+      server_ip: server_ip,
+    });
+    if (amountDomain && amountDomain.status === 'success') {
+        sites = amountDomain.result.success;
+        await this.saveToDashboard({ team: team ?? '', server_ip: server_ip, sites: sites });
+        await this.saveToServer({ team: team ?? '', server_ip: server_ip, sites: sites });
+    }
+  } catch (error) {
+    console.error(`Error addOrUpdateServerInfo for ${server_ip}:`, error.message);
+    return null; // Trả về null nếu có lỗi
+  }
+};
+
+
+
+exports.addOrUpdateServerInfo = async ({ team, server_ip }) => {
+  try {
+    let amountDomain = await this.fetchDomainAmount({
+      team: team,
+      server_ip: server_ip,
+    });
+    if (amountDomain && amountDomain.status === 'success') {
+        sites = amountDomain.result.success;
+        await this.saveToDashboard({ team: team ?? '', server_ip: server_ip, sites: sites });
+        await this.saveToServer({ team: team ?? '', server_ip: server_ip, sites: sites });
+    }
+  } catch (error) {
+    console.error(`Error addOrUpdateServerInfo for ${server_ip}:`, error.message);
     return null; // Trả về null nếu có lỗi
   }
 };

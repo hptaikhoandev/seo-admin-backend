@@ -8,5 +8,6 @@ router.post('/', auth, serverController.AddServer);
 router.put('/:id', auth, serverController.UpdateServer);
 router.delete('/:id', auth, serverController.DeleteServer);
 router.post('/import-servers', auth, serverController.AddServerImport);
+router.post('/update-server-info', auth, serverController.addOrUpdateServerInfo);
 
 module.exports = router;
