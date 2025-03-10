@@ -15,7 +15,7 @@ const axios = require('axios');
 // };
 exports.AddServer = async (req, res) => {
     const { server_ip, team } = req.body;
-    const result = {"success": 0, "fail": {"count": 0, "messages": []}}
+    const result = {"success": 0, "fail": {"count": 0, "messages": []}, "messages": []}
     try {
         const apiUrl = process.env.API_URL_SCRIPT;
         const apiResponse = await axios.post(`${apiUrl}/add-server-domains`, { server_ip, team });
@@ -33,6 +33,7 @@ exports.AddServer = async (req, res) => {
 
             // Trả về kết quả thành công
             result.success += 1
+            result.messages.push(`Server ${public_ip} tạo mới thành công!`)
             return res.status(200).json({
                 status: "success",
                 result: result,
