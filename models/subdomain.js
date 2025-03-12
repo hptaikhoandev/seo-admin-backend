@@ -81,6 +81,10 @@ const SubDomains = sequelize.define(
         type: DataTypes.STRING(255),
         allowNull: true,
       },
+      dns_id: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+      },
       created_on: {
         type: DataTypes.DATE,
         allowNull: true,

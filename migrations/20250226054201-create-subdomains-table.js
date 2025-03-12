@@ -92,6 +92,10 @@ module.exports = {
         type: Sequelize.STRING(255),
         allowNull: true,
       },
+      dns_id: {
+        type: Sequelize.STRING(255),
+        allowNull: true,
+      },
     });
   },
 
