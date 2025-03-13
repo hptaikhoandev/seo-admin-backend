@@ -164,14 +164,14 @@ exports.saveListDataToSubDomain = async (listData) => {
 exports.deleteOldSubDomains = () => {
   try {
     // Calculate the date one month ago from today
-    const oneMonthAgo = new Date();
-    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+    const fifteenDaysAgo = new Date();
+    fifteenDaysAgo.setMonth(fifteenDaysAgo.getDate() - 15);
 
     // Delete records that are older than one month
     SubDomains.destroy({
       where: {
         createdAt: {
-          [Op.lt]: oneMonthAgo, // Find records with 'createdAt' before the calculated date
+          [Op.lt]: fifteenDaysAgo, // Find records with 'createdAt' before the calculated date
         },
       },
     });
