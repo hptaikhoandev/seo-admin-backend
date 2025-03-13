@@ -74,10 +74,82 @@ exports.findAllSubDomain = async (req, res) => {
                 'name',
                 [Sequelize.fn('MAX', Sequelize.col('subdomains.created_on')), 'created_on'], // Get latest createdOn per group
                 [Sequelize.fn('MAX', Sequelize.col('subdomains.modified_on')), 'modified_on'], // Get latest modifiedOn per group
-                [Sequelize.fn('MAX', Sequelize.col('subdomains.content')), 'content'], // Get latest content per group
-                [Sequelize.fn('MAX', Sequelize.col('subdomains.dns_id')), 'dns_id'], // Get latest content per group
-                [Sequelize.fn('MAX', Sequelize.col('subdomains.domain')), 'domain'], // Get latest content per group
-                [Sequelize.fn('MAX', Sequelize.col('subdomains.type')), 'type'], // Get latest type per group
+                [
+                    Sequelize.literal(`
+                        (
+                            SELECT sub.content 
+                            FROM subdomains AS sub 
+                            WHERE sub.account_id = subdomains.account_id 
+                            AND sub.zone_id = subdomains.zone_id 
+                            AND sub.name = subdomains.name 
+                            AND sub.id = (
+                                SELECT MAX(s.id) FROM subdomains s 
+                                WHERE s.account_id = subdomains.account_id 
+                                AND s.zone_id = subdomains.zone_id 
+                                AND s.name = subdomains.name
+                            )
+                        )
+                    `),
+                    'content'
+                ],
+                // [Sequelize.fn('MAX', Sequelize.col('subdomains.dns_id')), 'dns_id'], // Get latest content per group
+                [
+                    Sequelize.literal(`
+                        (
+                            SELECT sub.dns_id 
+                            FROM subdomains AS sub 
+                            WHERE sub.account_id = subdomains.account_id 
+                            AND sub.zone_id = subdomains.zone_id 
+                            AND sub.name = subdomains.name 
+                            AND sub.id = (
+                                SELECT MAX(s.id) FROM subdomains s 
+                                WHERE s.account_id = subdomains.account_id 
+                                AND s.zone_id = subdomains.zone_id 
+                                AND s.name = subdomains.name
+                            )
+                        )
+                    `),
+                    'dns_id'
+                ],
+                // [Sequelize.fn('MAX', Sequelize.col('subdomains.domain')), 'domain'], // Get latest content per group
+                [
+                    Sequelize.literal(`
+                        (
+                            SELECT sub.domain 
+                            FROM subdomains AS sub 
+                            WHERE sub.account_id = subdomains.account_id 
+                            AND sub.zone_id = subdomains.zone_id 
+                            AND sub.name = subdomains.name 
+                            AND sub.id = (
+                                SELECT MAX(s.id) FROM subdomains s 
+                                WHERE s.account_id = subdomains.account_id 
+                                AND s.zone_id = subdomains.zone_id 
+                                AND s.name = subdomains.name
+                            )
+                        )
+                    `),
+                    'domain'
+                ],
+                // [Sequelize.fn('MAX', Sequelize.col('subdomains.type')), 'type'], // Get latest type per group
+                [
+                    Sequelize.literal(`
+                        (
+                            SELECT sub.type 
+                            FROM subdomains AS sub 
+                            WHERE sub.account_id = subdomains.account_id 
+                            AND sub.zone_id = subdomains.zone_id 
+                            AND sub.name = subdomains.name 
+                            AND sub.id = (
+                                SELECT MAX(s.id) FROM subdomains s 
+                                WHERE s.account_id = subdomains.account_id 
+                                AND s.zone_id = subdomains.zone_id 
+                                AND s.name = subdomains.name
+                            )
+                        )
+                    `),
+                    'type'
+                ],
+                
                 [Sequelize.fn('MAX', Sequelize.col('subdomains.createdAt')), 'createdAt'], // Get latest createdAt per group
                 [Sequelize.literal('(SELECT email FROM accountIds WHERE accountIds.account_id = subdomains.account_id LIMIT 1)'), 'email'],
                 [Sequelize.literal('(SELECT team FROM accountIds WHERE accountIds.account_id = subdomains.account_id LIMIT 1)'), 'team'],
