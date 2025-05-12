@@ -15,10 +15,12 @@ exports.runDailyTask = async () => {
       const itemsVPSSeo2 = serverList.filter(item => item.team === 'seo-2');
       const itemsVPSSeo3 = serverList.filter(item => item.team === 'seo-3');
       const itemsVPSSeo4 = serverList.filter(item => item.team === 'seo-4');
+      const itemVPSDigital = serverList.filter(item => item.team === 'digital');
       const serverIpsSeo1 = itemsVPSSeo1.map(item => item.server_ip);
       const serverIpsSeo2 = itemsVPSSeo2.map(item => item.server_ip);
       const serverIpsSeo3 = itemsVPSSeo3.map(item => item.server_ip);
       const serverIpsSeo4 = itemsVPSSeo4.map(item => item.server_ip);
+      const serverIpsDigital = itemVPSDigital.map(item => item.server_ip);
   
       let totalSiteSEO1 = 0;
       let totalSiteSEO2 = 0;
@@ -41,23 +43,27 @@ exports.runDailyTask = async () => {
         await this.addOrUpdateServerInfo({team: itemsVPSSeo4[i].team, server_ip: itemsVPSSeo4[i].server_ip});
       }
 
-      let perPage = 50;
-      let dnsRecords = await this.fetchDNSRecords({page: 0, per_page: perPage});
-      let totalPage = 0;
-      if (dnsRecords && dnsRecords.status === 'success') {
-        totalPage = dnsRecords.total_page;
-        for (let i = 0; i < totalPage; i++) {
-          dnsRecords = await this.fetchDNSRecords({page: i, per_page: perPage});
-          const filteredData = dnsRecords["results"].map(record => {
-            const { id, ...dataWithoutId } = record; // Destructure to remove 'id'
-            return dataWithoutId;
-          });
-          this.saveListDataToSubDomain(filteredData);
-        } 
-        
-        this.deleteOldSubDomains();
-        
+      for (let i = 0; i < itemVPSDigital.length; i++) {
+        await this.addOrUpdateServerInfo({team: itemVPSDigital[i].team, server_ip: itemVPSDigital[i].server_ip});
       }
+
+      // let perPage = 50;
+      // let dnsRecords = await this.fetchDNSRecords({page: 0, per_page: perPage});
+      // let totalPage = 0;
+      // if (dnsRecords && dnsRecords.status === 'success') {
+      //   totalPage = dnsRecords.total_page;
+      //   for (let i = 0; i < totalPage; i++) {
+      //     dnsRecords = await this.fetchDNSRecords({page: i, per_page: perPage});
+      //     const filteredData = dnsRecords["results"].map(record => {
+      //       const { id, ...dataWithoutId } = record; // Destructure to remove 'id'
+      //       return dataWithoutId;
+      //     });
+      //     this.saveListDataToSubDomain(filteredData);
+      //   } 
+        
+      //   this.deleteOldSubDomains();
+        
+      // }
       console.log("Daily task completed successfully.");
     } catch (error) {
       console.error("Error in daily task:", error.message);
@@ -99,26 +105,6 @@ exports.addOrUpdateServerInfo = async ({ team, server_ip }) => {
     return null; // Trả về null nếu có lỗi
   }
 };
-
-
-
-exports.addOrUpdateServerInfo = async ({ team, server_ip }) => {
-  try {
-    let amountDomain = await this.fetchDomainAmount({
-      team: team,
-      server_ip: server_ip,
-    });
-    if (amountDomain && amountDomain.status === 'success') {
-        sites = amountDomain.result.success;
-        await this.saveToDashboard({ team: team ?? '', server_ip: server_ip, sites: sites });
-        await this.saveToServer({ team: team ?? '', server_ip: server_ip, sites: sites });
-    }
-  } catch (error) {
-    console.error(`Error addOrUpdateServerInfo for ${server_ip}:`, error.message);
-    return null; // Trả về null nếu có lỗi
-  }
-};
-
 
 exports.fetchDNSRecords = async ({page, per_page}) => {
   const apiUrl = process.env.API_URL_SCRIPT;
