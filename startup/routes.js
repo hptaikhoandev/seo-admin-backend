@@ -4,6 +4,7 @@ const authRoutes = require('../routes/authRoutes');
 const userRoutes = require('../routes/userRoutes');
 const domainRoutes = require('../routes/domainRoutes');
 const subDomainRoutes = require('../routes/subDomainRoutes');
+const subDomainHistoryRoutes = require('../routes/subDomainHistoryRoutes');
 const accountIdRoutes = require('../routes/accountIdRoutes');
 const pemRoutes = require('../routes/pemRoutes');
 const serverRoutes = require('../routes/serverRoutes');
@@ -18,6 +19,7 @@ module.exports = function (app) {
   app.use('/api/users', userRoutes);
   app.use('/api/domains', domainRoutes);
   app.use('/api/subdomains', subDomainRoutes);
+  app.use('/api/subdomain-history', subDomainHistoryRoutes);
   app.use('/api/accountIds', accountIdRoutes);
   app.use('/api/pems', pemRoutes);
   app.use('/api/servers', serverRoutes);
