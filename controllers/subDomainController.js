@@ -2,6 +2,7 @@ const { Op, Sequelize } = require('sequelize');
 const axios = require('axios');
 const SubDomain = require("../models/subdomain");
 const AccountIds = require("../models/accountId");
+const SubDomainHistory = require("../models/subdomainHistory");
 
 
 exports.findAllSubDomain = async (req, res) => {
@@ -9,7 +10,7 @@ exports.findAllSubDomain = async (req, res) => {
         const { page = 1, limit = 10, search, sortBy, sortDesc, team } = req.query;
         const offset = (parseInt(page) - 1) * parseInt(limit);
 
-        // Define Search Filter
+        // Define Search Filter for the ORM query
         const whereClause = search
             ? {
                 [Op.and]: [
@@ -36,13 +37,14 @@ exports.findAllSubDomain = async (req, res) => {
             replacements.team = team;
         }
 
-        // Add Search Filtering
+        // Add Search Filtering - FIX: Properly add the search parameter to replacements
         if (search) {
             totalCountWhereClause.push(`
                 (sub.name LIKE :search
                 OR sub.account_id LIKE :search
                 OR sub.content LIKE :search)
             `);
+            // Add the search parameter to replacements with wildcard characters
             replacements.search = `%${search}%`;
         }
 
@@ -272,6 +274,17 @@ exports.updateSubDomain = async (req, res) => {
           });
         
         if (apiResponse.status === 200 && apiResponse.data.status === "success") {
+            // Create a new record in the subdomain history
+            await SubDomainHistory.create({
+                name: name,
+                type: req.body.type,
+                content: content,
+                dns_id: dns_id,
+                zone_id: zone_id,
+                account_id: account_id,
+                created_on: new Date(),
+                modified_on: new Date()
+            });
             result.success += 1;
             return res.status(200).json({
                 status: "success",
